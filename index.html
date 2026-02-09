@@ -1,0 +1,76 @@
+<!-- ================= index.html ================= -->
+<!-- ================= index.html ================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Campus Navigator</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="header">
+        <h1>📍 Smart Campus Navigator</h1>
+        <input id="searchInput" type="text" placeholder="Search building, lab, faculty..." class="search-box" />
+    </header>
+
+    <main>
+        <section class="map-container">
+            <div id="map" class="map-placeholder">Detecting your location...</div>
+        </section>
+
+        <section class="cards">
+            <div class="card">
+                <h3>Nearest Facility</h3>
+                <p>You are near Library (40m)</p>
+            </div>
+            <div class="card">
+                <h3>Navigation</h3>
+                <button id="navBtn">Navigate to Canteen</button>
+            </div>
+            <div class="card emergency">
+                <h3>🚨 Emergency</h3>
+                <button id="emergencyBtn">Find Help</button>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="#">Map</a>
+        <a href="#">Search</a>
+        <a href="#">Tracker</a>
+        <a href="#">Profile</a>
+    </nav>
+<script>
+// Fake location detection
+const mapBox = document.getElementById("map");
+setTimeout(()=>{
+  mapBox.innerText = "📍 You are near: Computer Science Block";
+},1500);
+
+// Search filter
+const search = document.getElementById("searchInput");
+search.addEventListener("input",()=>{
+  const value = search.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(card=>{
+    card.style.display = card.innerText.toLowerCase().includes(value) ? "block" : "none";
+  });
+});
+
+// Navigation button
+const navBtn = document.getElementById("navBtn");
+navBtn.onclick = ()=>{
+  alert("Route: From your location → Main Path → Canteen (2 min walk)");
+};
+
+// Emergency button
+const emergencyBtn = document.getElementById("emergencyBtn");
+emergencyBtn.onclick = ()=>{
+  alert("Nearest Security Office: 60 meters away");
+};
+</script>
+</body>
+</html>
+
+
+<!-- ================= styles.css ================= -->
