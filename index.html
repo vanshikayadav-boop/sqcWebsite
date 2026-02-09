@@ -1,76 +1,307 @@
-<!-- ================= index.html ================= -->
-<!-- ================= index.html ================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Campus Navigator</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .info-card.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+            text-align: right;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .map {
+            width: 100%;
+            height: 300px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .map.show {
+            display: block;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <header class="header">
-        <h1>📍 Smart Campus Navigator</h1>
-        <input id="searchInput" type="text" placeholder="Search building, lab, faculty..." class="search-box" />
-    </header>
-
-    <main>
-        <section class="map-container">
-            <div id="map" class="map-placeholder">Detecting your location...</div>
-        </section>
-
-        <section class="cards">
-            <div class="card">
-                <h3>Nearest Facility</h3>
-                <p>You are near Library (40m)</p>
+    <div class="container">
+        <h1>🌍 Geolocation Finder</h1>
+        <p class="subtitle">Find your current location with one click</p>
+        
+        <button class="btn" id="getLocationBtn">Get My Location</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Getting your location...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="info-card" id="infoCard">
+            <div class="info-item">
+                <span class="info-label">Latitude:</span>
+                <span class="info-value" id="latitude">-</span>
             </div>
-            <div class="card">
-                <h3>Navigation</h3>
-                <button id="navBtn">Navigate to Canteen</button>
+            <div class="info-item">
+                <span class="info-label">Longitude:</span>
+                <span class="info-value" id="longitude">-</span>
             </div>
-            <div class="card emergency">
-                <h3>🚨 Emergency</h3>
-                <button id="emergencyBtn">Find Help</button>
+            <div class="info-item">
+                <span class="info-label">Accuracy:</span>
+                <span class="info-value" id="accuracy">-</span>
             </div>
-        </section>
-    </main>
+            <div class="info-item">
+                <span class="info-label">Altitude:</span>
+                <span class="info-value" id="altitude">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Speed:</span>
+                <span class="info-value" id="speed">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Timestamp:</span>
+                <span class="info-value" id="timestamp">-</span>
+            </div>
+        </div>
+        
+        <iframe class="map" id="map" frameborder="0"></iframe>
+    </div>
 
-    <nav class="bottom-nav">
-        <a href="#">Map</a>
-        <a href="#">Search</a>
-        <a href="#">Tracker</a>
-        <a href="#">Profile</a>
-    </nav>
-<script>
-// Fake location detection
-const mapBox = document.getElementById("map");
-setTimeout(()=>{
-  mapBox.innerText = "📍 You are near: Computer Science Block";
-},1500);
+    <script>
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const infoCard = document.getElementById('infoCard');
+        const map = document.getElementById('map');
 
-// Search filter
-const search = document.getElementById("searchInput");
-search.addEventListener("input",()=>{
-  const value = search.value.toLowerCase();
-  document.querySelectorAll(".card").forEach(card=>{
-    card.style.display = card.innerText.toLowerCase().includes(value) ? "block" : "none";
-  });
-});
+        getLocationBtn.addEventListener('click', getLocation);
 
-// Navigation button
-const navBtn = document.getElementById("navBtn");
-navBtn.onclick = ()=>{
-  alert("Route: From your location → Main Path → Canteen (2 min walk)");
-};
+        function getLocation() {
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                showError('Geolocation is not supported by your browser');
+                return;
+            }
 
-// Emergency button
-const emergencyBtn = document.getElementById("emergencyBtn");
-emergencyBtn.onclick = ()=>{
-  alert("Nearest Security Office: 60 meters away");
-};
-</script>
+            // Reset UI
+            error.classList.remove('show');
+            infoCard.classList.remove('show');
+            map.classList.remove('show');
+            loading.classList.add('show');
+            getLocationBtn.disabled = true;
+
+            // Get current position
+            navigator.geolocation.getCurrentPosition(
+                showPosition,
+                handleError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function showPosition(position) {
+            loading.classList.remove('show');
+            getLocationBtn.disabled = false;
+            infoCard.classList.add('show');
+            map.classList.add('show');
+
+            const coords = position.coords;
+            const timestamp = new Date(position.timestamp);
+
+            // Update info card
+            document.getElementById('latitude').textContent = coords.latitude.toFixed(6);
+            document.getElementById('longitude').textContent = coords.longitude.toFixed(6);
+            document.getElementById('accuracy').textContent = coords.accuracy.toFixed(2) + ' meters';
+            document.getElementById('altitude').textContent = coords.altitude 
+                ? coords.altitude.toFixed(2) + ' meters' 
+                : 'Not available';
+            document.getElementById('speed').textContent = coords.speed 
+                ? (coords.speed * 3.6).toFixed(2) + ' km/h' 
+                : 'Not available';
+            document.getElementById('timestamp').textContent = timestamp.toLocaleString();
+
+            // Show map
+            const mapUrl = `https://maps.google.com/maps?q=${coords.latitude},${coords.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+            map.src = mapUrl;
+        }
+
+        function handleError(error) {
+            loading.classList.remove('show');
+            getLocationBtn.disabled = false;
+
+            let message = '';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Location access denied. Please allow location access in your browser settings.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location information is unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'The request to get your location timed out.';
+                    break;
+                default:
+                    message = 'An unknown error occurred.';
+                    break;
+            }
+            showError(message);
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+    </script>
 </body>
 </html>
-
-
-<!-- ================= styles.css ================= -->
